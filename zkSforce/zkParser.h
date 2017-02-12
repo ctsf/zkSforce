@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 //
 
-#include <libxml/parser.h>
+@import Libxml2;
 
 FOUNDATION_EXPORT NSString *const NS_URI_XSI;
 FOUNDATION_EXPORT NSString *const NS_URI_XSD;
