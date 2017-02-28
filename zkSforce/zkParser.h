@@ -19,7 +19,11 @@
 // THE SOFTWARE.
 //
 
-@import Libxml2;
+#if (TARGET_OS_SIMULATOR)
+    @import Libxml2Simulator;
+#else
+    @import Libxml2Device;
+#endif
 
 FOUNDATION_EXPORT NSString *const NS_URI_XSI;
 FOUNDATION_EXPORT NSString *const NS_URI_XSD;
