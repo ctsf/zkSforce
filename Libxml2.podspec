@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
     s.source       = { git: 'https://github.com/pilot34/zkSforce.git', tag: "v38.0.2.2" }
     s.platform     = :ios, '8.0'
 
-    s.library = 'xml2'
+    s.libraries = 'xml2'
     s.preserve_paths = 'modulemaps/**/*'
     s.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
     s.pod_target_xcconfig = {
