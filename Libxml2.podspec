@@ -12,6 +12,5 @@ Pod::Spec.new do |s|
     s.preserve_paths = 'modulemaps/**/*'
     s.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
     s.module_map = 'Libxml2.modulemap'
-    s.header_files = 'Libxml2.h'
-    s.source_files = 'Libxml2-dummy-source.m'
+    s.source_files = 'Libxml2.h', 'Libxml2-dummy-source.m'
 end
