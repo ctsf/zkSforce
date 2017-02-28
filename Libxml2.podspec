@@ -16,5 +16,5 @@ Pod::Spec.new do |s|
         'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'         => '$(PODS_ROOT)/Libxml2/modulemaps/iphoneos',
         'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'  => '$(PODS_ROOT)/Libxml2/modulemaps/iphonesimulator',
     }
-    s.source_files = 'Libxml2-dummy.m'
+    s.source_files = 'Libxml2-dummy-source.m'
 end
