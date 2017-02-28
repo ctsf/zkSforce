@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
     s.dependency 'Libxml2'
     s.osx.frameworks = 'Security'
     s.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
+    s.library = 'xml2'
 end

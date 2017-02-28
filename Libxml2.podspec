@@ -12,9 +12,9 @@ Pod::Spec.new do |s|
     s.preserve_paths = 'modulemaps/**/*'
     s.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
     s.pod_target_xcconfig = {
-        'SWIFT_INCLUDE_PATHS[sdk=macosx*]'           => '$(PODS_ROOT)/Libxml2/modulemaps/macosx',
-        'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'         => '$(PODS_ROOT)/Libxml2/modulemaps/iphoneos',
-        'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'  => '$(PODS_ROOT)/Libxml2/modulemaps/iphonesimulator',
+        'MODULEMAP_FILE[sdk=macosx*]'           => '$(PODS_ROOT)/Libxml2/modulemaps/macosx',
+        'MODULEMAP_FILE[sdk=iphoneos*]'         => '$(PODS_ROOT)/Libxml2/modulemaps/iphoneos',
+        'MODULEMAP_FILE[sdk=iphonesimulator*]'  => '$(PODS_ROOT)/Libxml2/modulemaps/iphonesimulator',
     }
     s.source_files = 'Libxml2-dummy-source.m'
 end
