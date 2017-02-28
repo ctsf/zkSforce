@@ -19,10 +19,14 @@
 // THE SOFTWARE.
 //
 
-#if (TARGET_OS_SIMULATOR)
-    @import Libxml2Simulator;
+// we should import the main framework
+@import Libxml2;
+
+// and then import child framework for necessary platform
+#if TARGET_OS_SIMULATOR
+@import Libxml2Simulator;
 #else
-    @import Libxml2Device;
+@import Libxml2Device;
 #endif
 
 FOUNDATION_EXPORT NSString *const NS_URI_XSI;
