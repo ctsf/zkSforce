@@ -11,6 +11,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Libxml2' do |l|
     l.library = 'xml2'
+    l.module_name = 'Libxml2'
     l.preserve_paths = 'modulemaps/**/*'
     l.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
     l.pod_target_xcconfig = {
@@ -22,6 +23,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'ZKSforce' do |z|
     z.source_files = 'zkSforce'
+    z.module_name = 'ZKSforce'
     z.public_header_files = 'zkSforce/*.h'
     z.dependency 'ZKSforce/Libxml2'
     z.osx.frameworks = 'Security'
