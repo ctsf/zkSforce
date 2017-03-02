@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
 
     s.source_files = 'zkSforce'
     s.public_header_files = 'zkSforce/*.h'
-    s.dependency 'Libxml2'
+    s.dependency 'Libxml2Module'
     s.osx.frameworks = 'Security'
     s.xcconfig = { 'HEADER_SEARCH_PATHS' => '$(SDKROOT)/usr/include/libxml2' }
     s.libraries = 'xml2'
