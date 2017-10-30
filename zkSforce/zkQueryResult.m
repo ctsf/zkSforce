@@ -37,14 +37,14 @@
 		
 	NSArray * nodes = [node childElements:@"records"];
 	NSMutableArray * recArray = [NSMutableArray arrayWithCapacity:[nodes count]];
-	ZKSObject * o;
+
 	for (i = 0; i < [nodes count]; i++)
 	{
 		zkElement * n = [nodes objectAtIndex:i];
 		NSString *xsiNil = [n attributeValue:@"nil" ns:NS_URI_XSI];
 		if (xsiNil != nil && [xsiNil isEqualToString:@"true"])
 			continue;
-		o = [[ZKSObject alloc] initWithXmlElement:n];
+		ZKSObject * o = [[ZKSObject alloc] initWithXmlElement:n];
 		[recArray addObject:o];
 		[o release];
 	}	
