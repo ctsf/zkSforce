@@ -131,9 +131,27 @@ static const int DEFAULT_MAX_SESSION_AGE = 25 * 60; // 25 minutes
     [req setHTTPBody:[params dataUsingEncoding:NSUTF8StringEncoding]];
     [req addValue:@"application/x-www-form-urlencoded; charset=UTF-8" forHTTPHeaderField:@"Content-Type"];
 
- 	NSHTTPURLResponse *resp = nil;
-	NSError *err = nil;
-	NSData *respPayload = [NSURLConnection sendSynchronousRequest:req returningResponse:&resp error:&err];
+    #if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_9_0
+        NSError *err = nil;
+        NSHTTPURLResponse *resp = nil;
+        NSData *respPayload = [NSURLConnection sendSynchronousRequest:req returningResponse:&resp error:&err];
+    #else
+        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+        
+        __block NSHTTPURLResponse *resp = nil;
+        __block NSError *err = nil;
+        __block NSData *respPayload = [[NSData alloc] init];
+        [[[NSURLSession sharedSession] dataTaskWithRequest:req
+                                         completionHandler:^(NSData *responseData, NSURLResponse *response, NSError *responseError) {
+            respPayload = [responseData copy];
+            resp = [response copy];
+            err = [responseError copy];
+            dispatch_semaphore_signal(semaphore);
+        }] resume];
+        
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    #endif
+
     NSString *respBody = [[[NSString alloc] initWithBytes:[respPayload bytes] length:[respPayload length] encoding:NSUTF8StringEncoding] autorelease];
     NSDictionary *results = [ZKOAuthInfo decodeParams:respBody];
     

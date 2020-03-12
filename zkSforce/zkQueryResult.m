@@ -44,7 +44,6 @@
 		NSString *xsiNil = [n attributeValue:@"nil" ns:NS_URI_XSI];
 		if (xsiNil != nil && [xsiNil isEqualToString:@"true"])
 			continue;
-        NSLog(@"it works");
 		ZKSObject * o = [[ZKSObject alloc] initWithXmlElement:n];
 		[recArray addObject:o];
 		[o release];

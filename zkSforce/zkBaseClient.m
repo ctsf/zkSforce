@@ -83,11 +83,28 @@ NSTimeInterval intervalFrom(uint64_t *start) {
 	NSData *data = [payload dataUsingEncoding:NSUTF8StringEncoding];
 	[request setHTTPBody:data];
 	
-	NSHTTPURLResponse *resp = nil;
-	NSError *err = nil;
 	// todo, support request compression
 	// todo, support response compression
-	NSData *respPayload = [NSURLConnection sendSynchronousRequest:request returningResponse:&resp error:&err];
+    #if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_9_0
+        NSHTTPURLResponse *resp = nil;
+        NSError *err = nil;
+        NSData *respPayload = [NSURLConnection sendSynchronousRequest:request returningResponse:&resp error:&err];
+    #else
+        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+        
+        __block NSHTTPURLResponse *resp = nil;
+        __block NSError *err = nil;
+        __block NSData *respPayload = [NSData new];
+        [[[NSURLSession sharedSession] dataTaskWithRequest:request
+                                         completionHandler:^(NSData *responseData, NSURLResponse *response, NSError *responseError) {
+            resp = [response copy];
+            respPayload = [responseData copy];
+            err = [responseError copy];
+            dispatch_semaphore_signal(semaphore);
+        }] resume];
+        
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    #endif
     @try {
         if (err) {
             NSLog(@"Got error sending API request %@ : %@", request, err);
