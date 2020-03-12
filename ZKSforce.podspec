@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
     s.name         = 'ZKSforce'
-    s.version      = '38.0.2.6'
+    s.version      = '38.0.2.8'
     s.summary      = 'A Cocoa library for calling the Salesforce.com SOAP APIs.'
     s.homepage     = 'https://github.com/superfell/zkSforce'
     s.license      = 'MIT'
     s.author       = { "Simon Fell" => "fellforce@gmail.com" }
-    s.source       = { git: 'https://github.com/ctteremalex/zkSforce.git', tag: "v38.0.2.6" }
+    s.source       = { git: 'https://github.com/ctteremalex/zkSforce.git', tag: "v38.0.2.8" }
     s.platform     = :ios, '8.0'
     s.requires_arc = false
 
