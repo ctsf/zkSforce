@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
     s.homepage     = 'https://github.com/superfell/zkSforce'
     s.license      = 'MIT'
     s.author       = { "Simon Fell" => "fellforce@gmail.com" }
-    s.source       = { git: 'https://github.com/ctteremalex/zkSforce.git', tag: "v38.0.2.8" }
+    s.source       = { git: 'https://github.com/ctsf/CT-zkSforce.git', tag: "v38.0.2.8" }
     s.platform     = :ios, '8.0'
     s.requires_arc = false
 
