@@ -1,21 +1,21 @@
 // Copyright (c) 2006,2013,2014,2016 Simon Fell
 //
-// Permission is hereby granted, free of charge, to any person obtaining a 
-// copy of this software and associated documentation files (the "Software"), 
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-// and/or sell copies of the Software, and to permit persons to whom the 
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included 
+// The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
 
@@ -27,19 +27,23 @@
 #import "ZKSimpleTypes.h"
 #import "ZKXsdAnyType.h"
 
-@implementation ZKXmlDeserializer
+@implementation ZKXmlDeserializer {
+    NSLock *locker;
+}
 
 -(id)initWithXmlElement:(zkElement *)e {
-	self = [super init];
-	node = [e retain];
-	values = [[NSMutableDictionary alloc] init];
-	return self;
+    self = [super init];
+    node = [e retain];
+    values = [[NSMutableDictionary alloc] init];
+    locker = [[NSLock alloc] init];
+    return self;
 }
 
 -(void)dealloc {
-	[node release];
-	[values release];
-	[super dealloc];
+    [locker release];
+    [node release];
+    [values release];
+    [super dealloc];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -47,11 +51,19 @@
 }
 
 - (NSString *)string:(NSString *)elem {
-	id cached = [values objectForKey:elem];
-	if (cached != nil) return cached == [NSNull null] ? nil : cached;
-	id v = [self string:elem fromXmlElement:node];
-	[values setObject:(v != nil ? v : [NSNull null]) forKey:elem];
-	return v;
+    [locker lock];
+    id cached = [values objectForKey:elem];
+    [locker unlock];
+
+    if (cached != nil) return cached == [NSNull null] ? nil : cached;
+
+    id v = [self string:elem fromXmlElement:node];
+
+    [locker lock];
+    [values setObject:(v != nil ? v : [NSNull null]) forKey:elem];
+    [locker unlock];
+
+    return v;
 }
 
 - (BOOL)boolean:(NSString *)elem {
@@ -59,11 +71,11 @@
 }
 
 - (int)integer:(NSString *)elem {
-	return [[self string:elem] intValue];
+    return [[self string:elem] intValue];
 }
 
 - (double)double:(NSString *)elem {
-	return [[self string:elem] doubleValue];
+    return [[self string:elem] doubleValue];
 }
 
 - (NSDate *)time:(NSString *)elem {
@@ -87,40 +99,60 @@
 }
 
 - (ZKXsdAnyType *)anyType:(NSString *)elem {
+    [locker lock];
     ZKXsdAnyType *cached = [values objectForKey:elem];
+    [locker unlock];
+
     if (cached == nil) {
         cached = [[[ZKXsdAnyType alloc] initWithXmlElement:[node childElement:elem]] autorelease];
-        [values setValue:cached forKey:elem];
+
+        [locker lock];
+        [values setObject:cached forKey:elem];
+        [locker unlock];
     }
     return cached;
 }
 
 - (NSData *)blob:(NSString *)elem {
+    [locker lock];
     NSData *cached = [values objectForKey:elem];
+    [locker unlock];
+
     if (cached == nil) {
         NSString *b64 = [self string:elem fromXmlElement:node];
         cached = [b64 ZKBase64Decode];
 
-        if (cached != nil)
-        	[values setObject:cached forKey:elem];
+        if (cached != nil) {
+            [locker lock];
+            [values setObject:cached forKey:elem];
+            [locker unlock];
+        }
     }
     return cached;
 }
 
 - (NSArray *)strings:(NSString *)elem {
-	NSArray *cached = [values objectForKey:elem];
-	if (cached != nil) return cached;
-	NSArray *nodes = [node childElements:elem];
-	NSMutableArray *s = [NSMutableArray arrayWithCapacity:[nodes count]];
-	for (zkElement *e in nodes) 
-		[s addObject:[e stringValue]];
-	
-	[values setObject:s forKey:elem];
-	return s;
+    [locker lock];
+    NSArray *cached = [values objectForKey:elem];
+    [locker unlock];
+
+    if (cached != nil) return cached;
+
+    NSArray *nodes = [node childElements:elem];
+    NSMutableArray *s = [NSMutableArray arrayWithCapacity:[nodes count]];
+    for (zkElement *e in nodes) {
+        [s addObject:[e stringValue]];
+    }
+
+    [locker lock];
+    [values setObject:s forKey:elem];
+    [locker unlock];
+
+    return s;
 }
 
 - (NSString *)string:(NSString *)elemName fromXmlElement:(zkElement*)xmlElement {
-	return [[xmlElement childElement:elemName] stringValue];
+    return [[xmlElement childElement:elemName] stringValue];
 }
 
 - (Class) complexTypeClassForType:(ZKNamespacedName *)xsiType baseClass:(Class)base {
@@ -131,20 +163,27 @@
 }
 
 - (NSArray *)complexTypeArrayFromElements:(NSString *)elemName cls:(Class)type {
-	NSArray *cached = [values objectForKey:elemName];
-	if (cached == nil) {
-		NSArray *elements = [node childElements:elemName];
-		NSMutableArray *results = [NSMutableArray arrayWithCapacity:[elements count]];
-		for(zkElement *childNode in elements) {
+    [locker lock];
+    NSArray *cached = [values objectForKey:elemName];
+    [locker unlock];
+
+    if (cached == nil) {
+        NSArray *elements = [node childElements:elemName];
+        NSMutableArray *results = [NSMutableArray arrayWithCapacity:[elements count]];
+        for (zkElement *childNode in elements) {
             Class actualType = [self complexTypeClassForType:[childNode xsiType] baseClass:type];
-			NSObject *child = [[actualType alloc] initWithXmlElement:childNode];
-			[results addObject:child];
-			[child release];
-		}
-		[values setObject:results forKey:elemName];
-		cached = results;
-	}
-	return cached;
+            NSObject *child = [[actualType alloc] initWithXmlElement:childNode];
+            [results addObject:child];
+            [child release];
+        }
+
+        [locker lock];
+        [values setObject:results forKey:elemName];
+        [locker unlock];
+
+        cached = results;
+    }
+    return cached;
 }
 
 -(NSString *)description {
